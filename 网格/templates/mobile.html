@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>基金分析 - 移动端</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        /* 移动端全局样式 */
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .container {
+            padding: 10px;
+            max-width: 100%;
+        }
+        
+        /* 移动端标题 */
+        .mobile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            margin: -10px -10px 15px -10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .mobile-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        /* 移动端卡片 */
+        .mobile-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .mobile-card-header {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .mobile-card-body {
+            padding: 15px;
+        }
+        
+        /* 移动端按钮 */
+        .btn-mobile {
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-mobile:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-primary-mobile {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-success-mobile {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+        
+        .btn-danger-mobile {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+        
+        /* 移动端表单 */
+        .form-control-mobile {
+            padding: 12px 15px;
+            font-size: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            min-height: 48px;
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-control-mobile:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .form-label-mobile {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        /* 移动端表格 */
+        .mobile-table {
+            font-size: 0.85rem;
+            max-height: 400px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .mobile-table table {
+            margin-bottom: 0;
+        }
+        
+        .mobile-table th {
+            background: #495057;
+            color: white;
+            padding: 10px 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .mobile-table td {
+            padding: 8px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+        }
+        
+        .mobile-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        /* 移动端图表容器 */
+        .chart-container-mobile {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* 移动端网格布局 */
+        .mobile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .mobile-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .mobile-grid-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        /* 移动端基金选择器 */
+        .fund-selector-mobile {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .fund-selector-mobile .form-control-mobile {
+            margin-bottom: 10px;
+        }
+        
+        /* 移动端按钮组 */
+        .btn-group-mobile {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-group-mobile .btn-mobile {
+            flex: 1;
+            min-width: 80px;
+        }
+        
+        /* 移动端模态框优化 */
+        .modal-mobile .modal-dialog {
+            margin: 10px;
+            max-width: calc(100% - 20px);
+        }
+        
+        .modal-mobile .modal-content {
+            border-radius: 12px;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            .mobile-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .mobile-grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .mobile-grid-4 {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-group-mobile {
+                flex-direction: column;
+            }
+            
+            .mobile-table {
+                font-size: 0.75rem;
+            }
+            
+            .mobile-table th,
+            .mobile-table td {
+                padding: 6px 4px;
+            }
+        }
+        
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 触摸反馈 */
+        .touch-feedback {
+            transition: all 0.1s ease;
+        }
+        
+        .touch-feedback:active {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 移动端标题 -->
+        <div class="mobile-header">
+            <h1>📊 基金分析系统</h1>
+        </div>
+
+        <!-- 基金管理区 -->
+        <div class="mobile-card">
+            <div class="mobile-card-header">
+                📈 基金管理
+            </div>
+            <div class="mobile-card-body">
+                <div class="fund-selector-mobile">
+                    <label class="form-label-mobile">当前基金：</label>
+                    <form method="POST" class="mobile-grid-4">
+                        <select name="fund_id" class="form-control-mobile" id="fundSelect" onchange="this.form.submit()">
+                            {% for fund in funds %}
+                            <option value="{{ fund.fund_id }}" {% if fund.fund_id|string == current_fund_id|string %}selected{% endif %}>
+                                {{ fund.fund_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="btn-group-mobile">
+                            <div class="btn-group-mobile" style="flex-direction: row; gap: 10px; width: 100%;">
+                                <button type="button" class="btn-mobile btn-primary-mobile touch-feedback" data-bs-toggle="modal" data-bs-target="#editFundModal" style="width: 50%;">
+                                    修改
+                                </button>
+                                <button type="button" class="btn-mobile btn-danger-mobile touch-feedback" onclick="confirmDelete()" style="width: 50%;">
+                                    删除
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <form method="POST" class="mobile-grid">
+                        <input type="text" name="new_fund" class="form-control-mobile" placeholder="新基金名称" required>
+                        <button type="submit" class="btn-mobile btn-success-mobile touch-feedback">
+                            ➕ 创建基金
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 修改基金名称模态框 -->
+        <div class="modal fade modal-mobile" id="editFundModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">修改基金名称</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="editFundForm" method="POST" action="/">
+                        <div class="modal-body">
+                            <input type="hidden" name="fund_id" id="editFundId">
+                            <input type="hidden" name="update_fund_name" value="1">
+                            <div class="mb-3">
+                                <label class="form-label-mobile">新名称</label>
+                                <input type="text" class="form-control-mobile" name="new_name" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn-mobile btn-secondary touch-feedback" data-bs-dismiss="modal">取消</button>
+                            <button type="submit" class="btn-mobile btn-primary-mobile touch-feedback">保存</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 删除确认表单 -->
+        <form id="deleteFundForm" method="POST" style="display: none;">
+            <input type="hidden" name="fund_id" id="deleteFundId">
+            <input type="hidden" name="delete_fund" value="1">
+        </form>
+
+        <!-- 数据录入区 -->
+        <div class="mobile-card">
+            <div class="mobile-card-header">
+                📝 数据录入
+            </div>
+            <div class="mobile-card-body">
+                <form method="POST">
+                    <div class="mobile-grid-4">
+                        <div>
+                            <label class="form-label-mobile">日期</label>
+                            <input type="date" name="date" class="form-control-mobile" required>
+                        </div>
+                        <div>
+                            <label class="form-label-mobile">净值</label>
+                            <input type="number" step="0.0001" name="net_value" class="form-control-mobile" required>
+                        </div>
+                        <div>
+                            <label class="form-label-mobile">加额（可负）</label>
+                            <input type="number" step="0.01" name="addition" class="form-control-mobile" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="form-label-mobile">加份</label>
+                            <input type="number" step="0.0001" name="shares" class="form-control-mobile" placeholder="0">
+                            <small class="text-muted">净值×加份=加额</small>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <button type="submit" class="btn-mobile btn-primary-mobile touch-feedback">
+                            💾 提交数据
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 结果展示区 -->
+        <div class="mobile-card">
+            <div class="mobile-card-header">
+                📊 {{ current_fund_name }} - 计算结果
+            </div>
+            <div class="mobile-card-body" style="padding: 0;">
+                {{ table_html|safe }}
+            </div>
+        </div>
+
+        <!-- 图表区域 -->
+        <div class="chart-container-mobile">
+            <h5 class="text-center mb-3">📈 净值趋势图</h5>
+            {{ chart_html|safe }}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 移动端优化脚本
+        document.addEventListener('DOMContentLoaded', function() {
+            // 修改基金名称模态框处理
+            const editModal = new bootstrap.Modal(document.getElementById('editFundModal'));
+            const fundSelect = document.getElementById('fundSelect');
+            const editForm = document.getElementById('editFundForm');
+            const editFundId = document.getElementById('editFundId');
+
+            document.querySelector('[data-bs-target="#editFundModal"]').addEventListener('click', function() {
+                const selectedFundId = fundSelect.value;
+                editFundId.value = selectedFundId;
+            });
+
+            // 删除基金确认
+            function confirmDelete() {
+                const selectedFundId = fundSelect.value;
+                const selectedFundName = fundSelect.options[fundSelect.selectedIndex].text;
+                if (confirm(`确定要删除基金 "${selectedFundName}" 吗？\n此操作不可恢复。`)) {
+                    const deleteForm = document.getElementById('deleteFundForm');
+                    document.getElementById('deleteFundId').value = selectedFundId;
+                    deleteForm.action = `/delete_fund/${selectedFundId}`;
+                    deleteForm.submit();
+                }
+            }
+            window.confirmDelete = confirmDelete;
+
+            // 移动端触摸优化
+            document.querySelectorAll('.touch-feedback').forEach(element => {
+                element.addEventListener('touchstart', function() {
+                    this.style.transform = 'scale(0.95)';
+                    this.style.opacity = '0.8';
+                });
+                
+                element.addEventListener('touchend', function() {
+                    this.style.transform = 'scale(1)';
+                    this.style.opacity = '1';
+                });
+            });
+
+            // 防止双击缩放
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function (event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+
+            // 自动设置今天的日期
+            const dateInput = document.querySelector('input[type="date"]');
+            if (dateInput && !dateInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+            }
+        });
+    </script>
+</body>
+</html>

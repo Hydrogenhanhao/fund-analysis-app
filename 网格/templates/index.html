@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>网格计算器</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        /* 全局样式：消除默认边距 */
+        body {
+            margin: 0;
+            padding: 10px 0 !important; /* 仅保留顶部10px内边距，其余消除 */
+        }
+        .container {
+            padding: 0 15px !important; /* 容器左右留白，上下无 */
+        }
+
+        /* 基金选择器区域：紧凑布局 */
+        .fund-selector {
+            margin-bottom: 10px !important; /* 减小底部间距 */
+        }
+        .card {
+            border-radius: 0.375rem;
+            border: 1px solid #dee2e6;
+        }
+        .card-body {
+            padding: 10px !important; /* 卡片内边距从20px减至10px */
+        }
+
+        /* 数据录入区：减小间距 */
+        .row.g-3 {
+            --bs-gutter-y: 0.5rem !important; /* 行内元素间距减小 */
+        }
+        .form-control {
+            text-align: center;
+            padding: 0.375rem 0.5rem !important; /* 输入框内边距减小 */
+        }
+        label {
+            margin-bottom: 3px !important; /* 标签底部间距减小 */
+            font-size: 0.9rem; /* 标签字体缩小 */
+        }
+        small.text-muted {
+            font-size: 0.75rem !important; /* 提示文字缩小 */
+        }
+
+        /* 结果表格：消除表头上方空白 */
+        .table-responsive {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 0 !important; /* 关键：消除表格顶部margin */
+            border: 1px solid #dee2e6; /* 表格边框，与卡片衔接 */
+            border-top: none; /* 顶部边框与卡片合并 */
+        }
+        .card-header {
+            padding: 5px 10px !important; /* 表头内边距减小 */
+            margin-bottom: 0 !important; /* 消除表头与表格间距 */
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        h5.mb-0 {
+            margin-bottom: 0 !important;
+            font-size: 1rem !important; /* 表头标题字体缩小 */
+        }
+
+        /* 表格内容样式 */
+        th, td {
+            text-align: center !important;
+            vertical-align: middle !important;
+            padding: 6px 8px !important; /* 单元格内边距减小 */
+            font-size: 0.85rem !important; /* 表格字体缩小 */
+        }
+        th {
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+            z-index: 10;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 0.25rem 0.5rem !important; /* 按钮内边距减小 */
+            font-size: 0.85rem !important; /* 按钮字体缩小 */
+        }
+
+        /* 图表区域：紧凑布局 */
+        .chart-container {
+            margin: 10px auto !important; /* 图表上下间距减小 */
+            max-width: 1200px;
+        }
+
+        /* 标红样式 */
+        .text-danger { 
+            color: #dc3545; 
+            font-weight: bold; 
+        }
+
+        /* 移动端优化样式 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px !important;
+            }
+            
+            /* 移动端表格优化 */
+            .table-responsive {
+                font-size: 0.75rem;
+                max-height: 400px;
+            }
+            
+            th, td {
+                padding: 4px 2px !important;
+                font-size: 0.7rem !important;
+            }
+            
+            /* 移动端按钮优化 */
+            .btn {
+                padding: 0.4rem 0.6rem !important;
+                font-size: 0.8rem !important;
+                min-height: 44px; /* 触摸友好的最小高度 */
+            }
+            
+            /* 移动端表单优化 */
+            .form-control, .form-select {
+                padding: 0.5rem !important;
+                font-size: 0.9rem !important;
+                min-height: 44px; /* 触摸友好的最小高度 */
+            }
+            
+            /* 移动端卡片优化 */
+            .card-body {
+                padding: 15px !important;
+            }
+            
+            /* 移动端图表优化 */
+            .chart-container {
+                margin: 15px auto !important;
+                padding: 0 5px;
+            }
+            
+            /* 移动端标题优化 */
+            h2 {
+                font-size: 1.5rem !important;
+                margin-bottom: 15px !important;
+            }
+            
+            /* 移动端基金选择器优化 */
+            .fund-selector .row {
+                flex-direction: column;
+            }
+            
+            .fund-selector .col-md-5 {
+                margin-bottom: 10px;
+            }
+            
+            /* 移动端数据录入区优化 */
+            .row.g-3 > div {
+                margin-bottom: 10px;
+            }
+            
+            /* 移动端模态框优化 */
+            .modal-dialog {
+                margin: 10px;
+            }
+        }
+
+        /* 超小屏幕优化 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 5px !important;
+            }
+            
+            .table-responsive {
+                font-size: 0.65rem;
+            }
+            
+            th, td {
+                padding: 2px 1px !important;
+                font-size: 0.6rem !important;
+            }
+            
+            .btn {
+                padding: 0.3rem 0.4rem !important;
+                font-size: 0.7rem !important;
+            }
+            
+            .form-control, .form-select {
+                padding: 0.4rem !important;
+                font-size: 0.8rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mb-3">网格计算器</h2> <!-- 主标题下方间距减小 -->
+
+        <!-- 基金管理区 -->
+        <div class="card mb-2 fund-selector"> <!-- mb-2 减小底部间距 -->
+            <div class="card-body">
+                <div class="row align-items-center justify-content-center">
+                    <div class="col-md-5 mb-2 mb-md-0"> <!-- mb-2 减小移动端间距 -->
+                        <form method="POST" class="d-flex align-items-center">
+                            <label class="me-2 flex-shrink-0">当前基金：</label>
+                            <div class="d-flex gap-2">
+                            <select name="fund_id" class="form-select" id="fundSelect" onchange="this.form.submit()">
+                                {% for fund in funds %}
+                                <option value="{{ fund.fund_id }}" {% if fund.fund_id|string == current_fund_id|string %}selected{% endif %}>
+                                    {{ fund.fund_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editFundModal">修改</button>
+                            <button type="button" class="btn btn-danger" onclick="confirmDelete()">删除</button>
+                        </div>
+                        </form>
+                    </div>
+                    <div class="col-md-5 ms-md-3">
+                        <form method="POST" class="d-flex">
+                            <input type="text" name="new_fund" class="form-control me-2" placeholder="新基金名称">
+                            <button type="submit" class="btn btn-success">创建</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 修改基金名称模态框 -->
+        <div class="modal fade" id="editFundModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">修改基金名称</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <!-- 这里action直接写/，不要用JS动态设置 -->
+                    <form id="editFundForm" method="POST" action="/">
+                        <div class="modal-body">
+                            <input type="hidden" name="fund_id" id="editFundId">
+                            <input type="hidden" name="update_fund_name" value="1">
+                            <div class="mb-3">
+                                <label class="form-label">新名称</label>
+                                <input type="text" class="form-control" name="new_name" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="submit" class="btn btn-primary">保存</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 删除确认表单 -->
+        <form id="deleteFundForm" method="POST" style="display: none;">
+            <input type="hidden" name="fund_id" id="deleteFundId">
+            <input type="hidden" name="delete_fund" value="1">
+        </form>
+
+        <script>
+        function confirmDelete() {
+            const selectElement = document.getElementById('fundSelect');
+            const selectedFundId = selectElement.value;
+            const selectedFundName = selectElement.options[selectElement.selectedIndex].text;
+            
+            if (confirm(`确定要删除基金 "${selectedFundName}"？此操作不可恢复。`)) {
+                document.getElementById('deleteFundId').value = selectedFundId;
+                document.getElementById('deleteFundForm').submit();
+            }
+        }
+        </script>
+
+        <!-- 数据录入区 -->
+        <div class="card mb-2"> <!-- mb-2 减小底部间距 -->
+            <div class="card-body">
+                <form method="POST" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="d-block text-center">日期</label>
+                        <input type="date" name="date" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="d-block text-center">净值</label>
+                        <input type="number" step="0.0001" name="net_value" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="d-block text-center">加额（可负）</label>
+                        <input type="number" step="0.01" name="addition" class="form-control" placeholder="0">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="d-block text-center">加份</label>
+                        <input type="number" step="0.0001" name="shares" class="form-control" placeholder="0">
+                        <small class="text-muted d-block text-center">净值×加份=加额（二选一）</small>
+                    </div>
+                    <div class="col-12 btn-container text-center">
+                        <button type="submit" class="btn btn-primary">提交数据</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 结果展示区（关键：消除表头上方空白） -->
+        <div class="card border-bottom-0"> <!-- 移除底部边框，与表格衔接 -->
+            <div class="card-header">
+                <h5 class="mb-0">{{ current_fund_name }} - 计算结果</h5>
+            </div>
+            <!-- 表格直接紧跟表头，无间隔 -->
+            <div class="table-responsive">
+                {{ table_html|safe }}
+            </div>
+        </div>
+
+        <!-- 图表区域 -->
+        <div class="chart-container">
+            {{ chart_html|safe }}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 加额最新涨幅非零值标红
+        document.addEventListener('DOMContentLoaded', function() {
+            const table = document.querySelector('table');
+            if (table) {
+                const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent.trim());
+                const targetCol = headers.indexOf('加额最新涨幅(%)');
+                if (targetCol !== -1) {
+                    table.querySelectorAll('tbody tr').forEach(row => {
+                        const cell = row.cells[targetCol];
+                        if (cell) {
+                            const value = parseFloat(cell.textContent);
+                            if (Math.abs(value) > 0.01) {
+                                cell.classList.add('text-danger');
+                            }
+                        }
+                    });
+                }
+            }
+
+            // 修改基金名称模态框处理
+            const editModal = new bootstrap.Modal(document.getElementById('editFundModal'));
+            const fundSelect = document.getElementById('fundSelect');
+            const editForm = document.getElementById('editFundForm');
+            const editFundId = document.getElementById('editFundId');
+
+            document.querySelector('[data-bs-target="#editFundModal"]').addEventListener('click', function() {
+                const selectedFundId = fundSelect.value;
+                editFundId.value = selectedFundId;
+                // 不再设置editForm.action
+            });
+
+            // 删除基金确认
+            function confirmDelete() {
+                const selectedFundId = fundSelect.value;
+                const selectedFundName = fundSelect.options[fundSelect.selectedIndex].text;
+                if (confirm(`确定要删除基金 "${selectedFundName}" 吗？此操作不可恢复。`)) {
+                    const deleteForm = document.getElementById('deleteFundForm');
+                    document.getElementById('deleteFundId').value = selectedFundId;
+                    deleteForm.action = `/delete_fund/${selectedFundId}`;
+                    deleteForm.submit();
+                }
+            }
+            window.confirmDelete = confirmDelete;
+        });
+    </script>
+</body>
+</html>
